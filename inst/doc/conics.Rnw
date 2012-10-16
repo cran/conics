@@ -1,0 +1,577 @@
+% ===========================================================================
+% File: conics.Rnw
+%           Created: 2011-01-11 19:04:06
+% Last modification: 2011-01-14 10:08:04
+% Author: Bernard Desgraupes
+% e-mmail: bdesgraupes@users.sourceforge.net
+% ===========================================================================
+% 
+% % Vignette meta-information
+% % -------------------------
+%\VignetteIndexEntry{An R Package for plotting conic curves}
+%\VignetteDepends{conics}
+%\VignetteKeywords{conic, plot, matrix}
+%\VignettePackage{conics}
+
+
+\documentclass[a4paper,10pt]{article}
+\usepackage{graphicx}
+\usepackage{ifthen}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsopn}
+\usepackage{amsthm}
+\usepackage{amscd}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{times}
+
+
+\newcommand{\Tr}{\mathrm{Tr}}
+\newcommand{\transp}[1]{{}^t\!#1}
+\newcommand{\dvp}[2]{\displaystyle\frac{\partial #1}{\partial #2}}
+
+\newcommand{\sign}[1]{\ifnum #1<0 \else +\fi}
+
+\newcommand{\signval}[1]{
+\ifnum #1<0 
+	\ifnum #1=-1 -\else #1\fi    
+\else 
+	\ifnum #1=1 +\else +#1\fi    
+\fi
+}
+
+\newcommand{\conic}[6]{#1\,x_1^2\signval{#2}\,x_1x_2\signval{#3}\,x_2^2\signval{#4}\,x_1\signval{#5}\,x_2\sign{#6}#6}
+\newcommand{\pnquad}[2]{#1_1\,#2_1^2+#1_2\,#2_1#2_2+#1_3\,#2_2^2+#1_4\,#2_1+#1_5\,#2_2+#1_6}
+
+\renewcommand{\arraystretch}{1.3}
+
+\pagestyle{myheadings}
+\markright{The \emph{conics} package - \today}
+
+
+
+\begin{document}
+
+
+\title{The R package \emph{Conics}}
+\author{Bernard Desgraupes\\
+University Paris Ouest\\
+Modal'X}
+\date{\small Last update: 2012-10-16}
+
+\maketitle
+
+\hrule
+\vspace{5mm}
+\tableofcontents
+\vspace{5mm}
+\hrule
+\newpage
+
+% $$\conic{1}{2}{-1}{-10}{-14}{1}$$
+% $$\pnquad{a}{x}$$
+% $$\pnquad{v}{Y}$$
+
+
+
+\section{Algebraic background}
+\label{sec-alg-bg}
+
+This section is a survey of the main results concerning the algebraic 
+representation of a plane conic.
+
+\subsection{Notation}
+\label{subsec-notation}
+
+A conic $\mathcal{C}$ is a plane algebraic curve of degree 2. It is the set of
+zeroes of a polynomial of degree 2 in 2 variables, that is to say the
+set of points $(x_1,x_2)$ satisfying an equation of the form
+\begin{equation}
+	P(x_1,x_2)=\pnquad{a}{x}=0.
+	\label{eq-conic-pn}
+\end{equation}
+
+Consider the following change of variables which introduces homogeneous 
+coordinates $(X_1,X_2,X_3)$:
+\begin{equation}
+	x_1=\frac{X_1}{X_3}\qquad x_2=\frac{X_2}{X_3}
+	\label{eq-hmg-coords}
+\end{equation}
+
+Provided $X_{3}\ne 0$, the previous equation can be simplified :
+\begin{equation}
+	Q(X_1,X_2,X_3)=a_1\,X_1^2+a_2\,X_1X_2+a_3\,X_2^2+a_4\,X_1X_3+a_5\,X_2X_3+a_6\,X_3^2=0.
+	\label{eq-quad-form}
+\end{equation}
+
+It appears that $Q(X_1,X_2,X_3)$ is quadratic form. This form can be
+represented by a $3\times 3$ matrix $A$ such that
+\begin{equation}
+	Q(X)=\transp{X}AX
+	\label{eq-repres-matrix}
+\end{equation}
+
+The matrix is defined like this :
+\begin{equation}
+	A=\begin{pmatrix}
+		a_1 & \dfrac{1}{2}a_2 & \dfrac{1}{2}a_4 \\[3mm]
+		\dfrac{1}{2}a_2 & a_3 & \dfrac{1}{2}a_5 \\[3mm]
+		\dfrac{1}{2}a_4 & \dfrac{1}{2}a_5 & a_6
+	\end{pmatrix}
+	\label{eq-mat-sym-A}
+\end{equation}
+
+It is a symmetric matrix. Let $\Delta=\det(A)$. If $\Delta\ne 0$, the
+conic is said to be \emph{regular} (or \emph{non-degenerate}),
+otherwise it is \emph{degenerate}. The same terminology applies to 
+the quadratic form itself.
+
+When a quadratic form is degenerate, it splits into the product of two
+polynomials of degree 1. Geometrically, it means that the conic is a
+pair of lines. On the contrary, if the quadratic form is
+non-degenerate, the conic is an ellipse, a hyperbola, or a parabola.
+
+
+\subsection{Classification}
+\label{subsec-classification}
+
+In order to decide which kind of conic is represented by the matrix $A$, one must
+consider the $2\times 2$ top left submatrix, i-e the matrix $B$
+obtained by deleting the last row and the last column of $A$:
+\begin{equation}
+	B=\begin{pmatrix}
+		a_1 & \dfrac{1}{2}a_2 \\[3mm]
+		\dfrac{1}{2}a_2 & a_3
+	\end{pmatrix}
+	\label{eq-mat-sym-B}
+\end{equation}
+The determinant of $B$ is denoted $\delta$. Its value is
+\begin{equation}
+	\delta=a_1a_3-\dfrac{1}{4}a_2^2.
+	\label{eq-val-delta}
+\end{equation}
+
+In the non-degenerate case, the matrix $A$ has rank 3 and one has the following classification 
+based on the value of $\delta$:
+\begin{itemize}
+\item  if $\delta>0$, $\mathcal{C}$ is an ellipse
+
+\item  if $\delta=0$, $\mathcal{C}$ is a parabola
+
+\item  if $\delta<0$, $\mathcal{C}$ is a hyperbola
+
+\end{itemize}
+
+
+If the conic is degenerate, $A$ has rank less than 3 and one has the following classification:
+\begin{itemize}
+\item  if $\delta>0$, $\mathcal{C}$ is empty
+
+\item  if $\delta=0$, $\mathcal{C}$ is a pair of parallel lines (possibly coincident)
+
+\item  if $\delta<0$, $\mathcal{C}$ is a pair of intersecting lines
+
+\end{itemize}
+In particular, the case of a double line (coincident parallel lines) occurs when $A$ 
+is of rank 1.
+
+
+\subsection{Points at infinity}
+\label{subsec-pts-inf}
+
+Except in the case of an ellipse, all the conics have points at 
+infinity. These points can be found by letting $X_{3}\longrightarrow 0$ 
+in equation~(\ref{eq-quad-form}). One obtains the following equation:
+\begin{equation*}
+	a_1\,X_1^2+a_2\,X_1X_2+a_3\,X_2^2=0
+\end{equation*}
+which can be rewritten in variables $x_1$ and $x_2$ like this 
+\begin{equation}
+	a_1\,x_1^2+a_2\,x_1x_2+a_3\,x_2^2=0.
+	\label{eq-pts-infty}
+\end{equation}
+
+Let $t=\dfrac{x_2}{x_1}$. The variable $t$ can be interpreted as the 
+slope of the directions to infinity. The previous equation becomes, after 
+division by $x_1^2$:
+\begin{equation}
+	a_1+a_2\,t+a_3\,t^2=0
+	\label{eq-slope-infty}
+\end{equation}
+
+It is an ordinary equation of degree 2 which will have real solutions 
+if its discriminant is non-negative :
+\begin{equation}
+	D= a_2^2-4a_1a_3 = -4\delta \geq 0
+	\label{eq-discriminant}
+\end{equation}
+
+So, if $\delta>0$ (case of an ellipse), the discriminant is negative
+and there are no solutions: this is normal since an ellipse does not
+have points at infinity. If $\delta<0$ (case of a hyperbola), one
+finds two distinct solutions which correspond to the slope of the
+asymptotes of the hyperbola. Finally, if $\delta=0$ (case of a
+parabola), one finds a unique solution which is the asymptotic
+direction of the branches of the parabola.
+
+
+\subsection{Center}
+\label{subsec-center}
+
+Some conics have a center $C$. In the center, the gradient of the
+quadratic polynomial $P$ is null. This leads to the following 
+equations:
+\begin{equation}
+\left\{
+\begin{array}{c}
+	 \dvp{P}{x_{1}}=0 \\
+	 \\
+	 \dvp{P}{x_{2}}=0
+\end{array}
+\right.	
+	\label{eq-gradient}
+\end{equation}
+
+The partial derivatives yield the following equations:
+\begin{equation}
+\left\{
+\begin{array}{rcl}
+	 a_1\,x_{1}+\dfrac{1}{2}a_2\,x_{2}+a_4  &=& 0 \\[3mm]
+	 \dfrac{1}{2}a_2\,x_{1}+\dfrac{1}{2}a_2\,x_{3}+a_5 &=& 0
+\end{array}
+\right.	
+	\label{eq-center-eqns}
+\end{equation}
+
+This is a system of two linear equations in two variables. Its matrix 
+is $B$. If $\delta=\det(B)\ne 0$, it has a unique solution and the conic 
+has a unique center. This is the case of an ellipse, or a hyperbola 
+or a pair of intersecting lines.
+
+
+
+\subsection{Axes}
+\label{subsec-axes}
+
+The symmetry axes of a conic are lines passing through the center.
+Their direction vectors are the eigenvectors of the submatrix $B$ 
+defined by \eqref{eq-mat-sym-B}.
+
+Since $B$ is symmetric, one has the following properties:
+\begin{itemize}
+\item  the eigenvalues $\lambda_{1}$ and $\lambda_{2}$ are real (not 
+complex);
+
+\item the eigenvectors are real too;
+
+\item the matrix can always be diagonalized in an orthonormal basis. 
+It means that one can always find two orthogonal eigenvectors with 
+norm equal to 1. Let us denote $V_{1}$ and $V_{2}$ these two vectors.
+
+\end{itemize}
+
+As a consequence, a conic has in general two axes which are 
+orthogonal. 
+
+The eigenvalues are the roots of the characteristic polynomial 
+associated to matrix $B$. It is defined as
+\begin{equation}
+\begin{split}
+	P(\lambda) &=\det(B-\lambda I) \\
+	&=\lambda^2 - \Tr(B)\lambda + \det(B) \\
+	&=\lambda^2 - (a_1+a_3)\lambda + \delta \\
+	&=0
+\end{split}
+	\label{eq-pn-caract}
+\end{equation}
+
+If $\lambda$ is an eigenvalue, the corresponding eigenvector $V$ can be 
+calculated by solving the following equation :
+\begin{equation}
+	(B-\lambda I)V=0
+	\label{eq-eigenvector}
+\end{equation}
+
+In the particular case where $\lambda_{1}=\lambda_{2}$, the eigenspace
+has dimension 2 which means that any direction is a possible
+eigenvector. This corresponds to a circle: in a circle indeed any
+diameter is a symmetry axis.
+
+
+\subsection{Reduced equation}
+\label{subsec-reduced-eq}
+
+In the case of a conic with a center (ellipse or hyperbola), one can 
+change the coordinate system by translating the origin to the center 
+$C$ and by rotating the axes to vectors $V_{1}$ and $V_{2}$. In the 
+$\{C,V_{1},V_{2}\}$ basis, let us designate the coordinates by 
+$y_{1}$ and $y_{2}$. The equation of the conic in this basis
+is remarkably simple :
+\begin{equation}
+	\lambda_{1}y_{1}^2+\lambda_{2}y_{2}^2+\frac{\Delta}{\delta}=0.
+	\label{eq-reduced-eqn}
+\end{equation}
+
+The relation between the $(x_{1},x_{2})$ and $(y_{1},y_{2})$
+coordinates are given by the transformation matrix $T$ whose columns
+are the eigenvectors $V_{1}$ and $V_{2}$. One has
+\begin{equation}
+	\begin{pmatrix}
+		x_{1} \\
+		x_{2}
+	\end{pmatrix}=
+	T\begin{pmatrix}
+		y_{1} \\
+		y_{2}
+	\end{pmatrix}.
+	\label{eq-transf-formula}
+\end{equation}
+
+
+
+
+\section{The \emph{conics} package}
+\label{sec-r-funcs}
+
+The R package \emph{conics} makes use of the previous results to 
+plot conic curves.
+The package must be loaded with the \emph{library} command like this:
+<<>>=
+library(conics)
+@
+
+
+\subsection{Basic functions}
+\label{subsec-basic-R-funcs}
+
+In the R \emph{conics} package, conics 
+can be specified either by a 6-length vector containing the 
+coefficients of the polynomial in equation~(\ref{eq-conic-pn}), or by the symmetric matrix $A$ defined by 
+equation~(\ref{eq-mat-sym-A}). 
+
+There is a convenience function named \textbf{conicMatrix} which
+computes the matrix $A$ given the vector of coefficients of the
+polynomial $P$ defined by~(\ref{eq-conic-pn}). Here is a simple
+example: let us consider the conic with equation
+$$\conic{2}{2}{2}{-20}{-28}{10}$$
+The vector of coefficients is
+<<>>=
+v <- c(2,2,2,-20,-28,10)
+@
+and the corresponding matrix can be obtained by the following instruction:
+<<print=TRUE>>=
+A <- conicMatrix(v)
+@
+
+The center and the axes of the conic can be calculated using the
+functions \textbf{conicCenter} and \textbf{conicAxes} respectively.
+For instance:
+<<>>=
+conicCenter(v)
+conicAxes(v)
+@
+Alternatively, one can specify the matrix instead of the vector:
+<<eval=FALSE>>=
+conicCenter(A)
+conicAxes(A)
+@
+
+
+Finally the conic can be plotted with the \textbf{conicPlot} function like 
+this:
+<<fig=TRUE,echo=TRUE>>=
+conicPlot(v, main="conicPlot(v)", xlab="", ylab="")
+@
+
+
+\subsection{Plotting parameters}
+\label{subsec-plotting-params}
+
+The \textbf{conicPlot} function calculates a set of points on the 
+conic and ultimately calls the usual \emph{plot} function from the \emph{graphics} 
+package. Any of the numerous arguments defined with the \emph{plot} 
+function can be specified in the \textbf{conicPlot} function as well. For 
+instance, in order to draw the previous ellipses in red with a dotted 
+contour, one can write :
+\begin{verbatim}
+conicPlot(v, col="red", lty=3)
+\end{verbatim}
+
+The \textbf{conicPlot} function also has a set of optional arguments 
+of its own. Currently the following arguments are defined :
+\begin{description}
+\item[add] is a boolean argument. If it is set to \verb|TRUE|, 
+the drawing is added to the current plot instead of erasing the 
+current graphical device.
+
+\item[as.col] specifies the color of the asymptotes. It can take the 
+same values as the \emph{col} argument of the \emph{plot} function.
+
+\item[as.lty] specifies the line type for the asymptotes. It can take the 
+same values as the \emph{lty} argument of the \emph{plot} function.
+
+\item[ax.col] specifies the color of the axes. It can take the 
+same values as the \emph{col} argument of the \emph{plot} function.
+
+\item[ax.lty] specifies the line type for the axes. It can take the 
+same values as the \emph{lty} argument of the \emph{plot} function.
+
+\item[asymptotes] is a boolean argument. If it is set to \verb|TRUE|, 
+the asymptotes will be drawn. This argument is meaningful only in the 
+case of a hyperbola.
+
+\item[center] is a boolean argument. If it is set to \verb|TRUE|, 
+the center will be marked by a small circle.
+
+\item[npoints] is a numeric argument indicating the number of points 
+to calculate in order to draw the curve. The default value is 100.
+
+\item[sym.axes] is a boolean argument. If it is set to \verb|TRUE|, 
+the symmetry axes will be drawn.
+
+\item[...] any other arguments will be passed verbatim to the basic
+\emph{plot} function from the \emph{graphics} package. See the
+documentation of the \emph{par} function to know which arguments are
+supported. In particular, the following two arguments are very useful:
+\begin{description}
+    \item[xlim] is a 2-elements numeric vector specifying the range of 
+    the x-coordinate.
+
+    \item[ylim] is a 2-elements numeric vector specifying the range of 
+    the y-coordinate.
+
+\end{description}
+
+\end{description}
+
+
+
+\subsection{Aspect ratio}
+\label{subsec-asp}
+
+In order to avoid distorsions due to the difference of units between
+the x-axis and the y-axis, the \emph{asp} argument can be very useful.
+It is defined as the ratio in length between one data unit in the $y$
+direction and one data unit in the $x$ direction.
+
+Setting $asp=1$ will ensure that the same unit length is used for both
+coordinate axes so that distances between points are represented
+accurately. For instance:
+\begin{verbatim}
+    conicPlot(v, asp=1)
+\end{verbatim}
+
+
+
+% % % % % % % % % 
+\newpage
+% % % % % % % % % 
+
+
+\subsection{Examples}
+\label{subsec-examples}
+
+Here is an example using the previous vector and demonstrating the 
+\emph{center} and the \emph{sym.axes} parameters :
+<<fig=TRUE,echo=TRUE>>=
+conicPlot(v, center=T, sym.axes=T)
+@
+
+% % % % % % % % % 
+\newpage
+% % % % % % % % % 
+
+Here is another example where several ellipses are drawn on the same 
+plot using the \emph{add} parameter :
+<<fig=TRUE,echo=TRUE>>=
+v <- c(2,2,2,-20,-28,10)
+conicPlot(v, center=T, lty=1)
+v[6] <- 30
+conicPlot(v, add=T, lty=2)
+v[6] <- 50
+conicPlot(v, add=T, lty=4)
+@
+
+% % % % % % % % % 
+\newpage
+% % % % % % % % % 
+
+Here is now an example of a hyperbola making use of the \emph{xlim} and \emph{ylim} 
+parameters :
+<<fig=TRUE,echo=TRUE>>=
+v <- c(2,2,-2,-20,20,10)
+conicPlot(v, xlim=c(-10,10), ylim=c(-5,18))
+@
+
+% % % % % % % % % 
+\newpage
+% % % % % % % % % 
+
+Here is an example with the same hyperbola demonstrating the \emph{as.col},
+\emph{as.lty}, \emph{ax.col}, and \emph{ax.lty} options :
+<<fig=TRUE,echo=TRUE>>=
+conicPlot(v, asymptotes=T, sym.axes=T,
+as.col="red", as.lty=2, ax.col="blue", ax.lty=4, 
+xlim=c(-10,10), ylim=c(-5,18))
+@
+
+% % % % % % % % % 
+\newpage
+% % % % % % % % % 
+
+Here is an example of extra arguments which are ultimately passed to
+the \emph{plot} function :
+<<fig=TRUE,echo=TRUE>>=
+conicPlot(v, asymptotes=T, sym.axes=T, 
+xlim=c(-10,10), ylim=c(-5,18),
+asp=1, col="blue", main="Hyperbola", bty="n")
+@
+
+The \emph{asp} argument (aspect ratio) is set to 1 to ensure accurate
+distances between points. The \emph{col} argument sets the color of
+the conic itself. The \emph{main} argument adds a title to the plot.
+The \emph{bty} argument set to "n" suppresses the box around the plot.
+
+
+% % % % % % % % % 
+\newpage
+% % % % % % % % % 
+
+\subsection{Return value}
+\label{subsec-return-value}
+
+The return value of the \textbf{conicPlot} function is invisible, i-e
+it is not printed on the console by default but it can be stored in a
+variable in order to get its contents.
+
+It is a list of computed values corresponding to various elements of
+the conic. Some of the following elements can be found in the return
+list, depending on the kind of the conic:
+\begin{description}
+\item[kind] the kind of the conic. It is a character string whose
+value is \emph{"ellipse"}, \emph{"hyperbola"},
+\emph{"parabola"}, or \emph{"lines"} ;
+
+\item[axes] the symmetry axes ; 
+
+\item[center] the center of the conic ; 
+
+\item[asymptotes] the slopes of the asymptotes ; 
+
+\item[vertices] the vertices of the conic ;
+
+\item[intercepts] the intercepts in the case of parallel lines.
+
+\end{description}
+
+Here an example 
+<<print=TRUE>>=
+v <- c(2,2,-2,-20,20,10)
+res <- conicPlot(v)
+@
+
+
+\end{document}
+

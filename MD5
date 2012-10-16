@@ -1,0 +1,11 @@
+38e816ceee00aee6d2dd33b3cd5289c0 *DESCRIPTION
+18e1f980f7d3e1c8e2dd835435776c36 *NAMESPACE
+f864360fbeeacb2c405e91771e89bd79 *R/main.R
+7f586686643034467bfe1b5c542f5c3a *inst/doc/conics.Rnw
+afd8a60c5273d5f93827d8b934d92f1d *inst/doc/conics.pdf
+565864fc91dff5f3ecf786cce8e2fc59 *man/conicAsymptotes.Rd
+b181c741f5afbc7f3745d45450656cd0 *man/conicAxes.Rd
+6b4a185d33f286253d57d5dac7b7a512 *man/conicCenter.Rd
+cc6a831fd7edd3f83278d74bc2c35ca4 *man/conicMatrix.Rd
+4bd03c3dc018be2b8c519ec669be923b *man/conicPlot.Rd
+1e9bf1dc9e9eab58ec6413f6d7a77b94 *man/conics-package.Rd

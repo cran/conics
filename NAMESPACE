@@ -1,0 +1,8 @@
+export(
+	"conicPlot",
+	"conicMatrix",
+	"conicCenter",
+	"conicAxes",
+	"conicAsymptotes"
+)
+
