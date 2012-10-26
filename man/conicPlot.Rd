@@ -68,7 +68,7 @@ conic:
   Bernard Desgraupes \cr
   \email{bernard.desgraupes@u-paris10.fr}\cr
   University of Paris Ouest - Nanterre\cr 
-  Lab Modal'X (EA 3454)\cr
+  Lab Modal'X\cr
 }
 
 \seealso{
@@ -107,8 +107,8 @@ conicPlot(v, asymptote=TRUE, as.col="grey30", as.lty=2,
 v <- c(4,4,1,20,20,20)
 conicPlot(v, sym.axes=TRUE, ax.lty=2, asp=1)
 
-# Degenerate conic
-# ----------------
+# Degenerate conics
+# -----------------
 # Intersecting lines
 # Equation:  x_1^2 - 2*x_1*x_2 - 8*x_2^2 - 2*x_1 + 14*x_2 - 3 = 0
 v <- c(1,-2,-8,-2,14,-3)

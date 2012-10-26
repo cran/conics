@@ -1,7 +1,7 @@
 # ===========================================================================
 # File: "main.R"
 #                        Created: 2011-01-11 12:47:48
-#              Last modification: 2011-01-20 09:24:13
+#              Last modification: 2012-10-26 07:24:15
 # Author: Bernard Desgraupes
 # e-mail: <bernard.desgraupes@u-paris10.fr>
 # ===========================================================================
@@ -20,16 +20,10 @@ conicPlot <- function(x, type='l', npoints=100,
 	xlim=NULL, ylim=NULL, ax.lty=1, ax.col=palette()[1], as.lty=1, as.col=palette()[1], ...) 
 {
 	m <- conicGetMatrix(x)
-	D <- det(m)
-	if (abs(D)<1e-14) {
-		if (options("warn")[[1]]) {
-			warning("det(m) less than 1e-14 replaced by 0")
-		}
-		D=0
-	}
+	D <- conicCheckDet(m)
+	d <- conicCheckDet(m[1:2,1:2])
 	
 	if (D != 0) {
-		d <- det(m[1:2,1:2])
 		if (d > 0) {
 			res <- plotEllipsis(m, D, d, npoints=npoints, 
 				sym.axes=sym.axes, center=center, add=add, 
@@ -50,7 +44,7 @@ conicPlot <- function(x, type='l', npoints=100,
 		if (options("warn")[[1]]) {
 			warning("conic is degenerate")
 		}
-		res <- plotDegenerateConic(m, npoints=npoints, 
+		res <- plotDegenerateConic(m, d, npoints=npoints, 
 			sym.axes=sym.axes, center=center, add=add, 
 			xlim=xlim, ylim=ylim, type=type, 
 			ax.lty=ax.lty, ax.col=ax.col, ...)
@@ -189,7 +183,7 @@ plotHyperbola <- function(m, D, d, npoints=100,
 		x2 <- a*ct/cos(t)-b*st*tan(t)+C[1]
 		y2 <- a*st/cos(t)+b*ct*tan(t)+C[2]
 
-		# Summits
+		# Vertices
 		xs <- c(a*ct+C[1],-a*ct+C[1])
 		ys <- c(a*st+C[2],-a*st+C[2])
 		
@@ -211,7 +205,7 @@ plotHyperbola <- function(m, D, d, npoints=100,
 		x2 <- a*ct*tan(t)-b*st/cos(t)+C[1]
 		y2 <- a*st*tan(t)+b*ct/cos(t)+C[2]
 		
-		# Summits
+		# Vertices
 		xs <- c(-b*st+C[1],b*st+C[1])
 		ys <- c(b*ct+C[2],-b*ct+C[2])
 		
@@ -351,19 +345,18 @@ plotParabola <- function(m, npoints=100,
  # 
  # ------------------------------------------------------------------------
  ##
-plotDegenerateConic <- function(m, npoints=100, 
+plotDegenerateConic <- function(m, dt, npoints=100, 
 						sym.axes, center, add, 
 						xlim, ylim, type, 
 						ax.lty, ax.col, ...) 
 {
 	B <- m[1:2,1:2]
-	dt <- det(B)
 	a <- m[1,1]
 	b <- m[1,2]
 	c <- m[2,2]
 	d <- m[1,3]
 	res <- list(kind="lines")
-	
+
 	# Look for the points at infinity
 	if (dt < 0) {
 		# Find the center
@@ -497,8 +490,8 @@ conicMatrix <- function(v) {
  # 
  # "conicCenter(x)" --
  # 
- # The 'm' argument is the symmetric 3x3 matrix defining the conic. The
- # function will raise an error if the conic has no center.
+ # The 'x' argument is either a 6-length vector or a symmetric 3x3 matrix.
+ # The function will raise an error if the conic has no center.
  # 
  # ------------------------------------------------------------------------
  ##
@@ -515,7 +508,7 @@ conicCenter <- function(x) {
  # 
  # "conicAxes(x)" --
  # 
- # The 'm' argument is the symmetric 3x3 matrix defining the conic. 
+ # The 'x' argument is either a 6-length vector or a symmetric 3x3 matrix. 
  # 
  # ------------------------------------------------------------------------
  ##
@@ -626,4 +619,27 @@ conicGetMatrix <- function(x) {
 	}	
 
 	return(m)
+}
+
+
+## 
+ # ------------------------------------------------------------------------
+ # 
+ # "conicCheckDet(x)" --
+ # 
+ # Compute a determinant. If it is less than 1e-14, replace it by 0 and
+ # emit a warning.
+ # 
+ # ------------------------------------------------------------------------
+ ##
+conicCheckDet <- function(m, emit=TRUE) {
+	dt <- det(m)
+	if (abs(dt)<1e-14) {
+		if (emit && options("warn")[[1]]) {
+			warning("determinant less than 1e-14, replaced by 0. Results may be inaccurate.")
+		}
+		dt <- 0
+	}
+
+	return(dt)
 }

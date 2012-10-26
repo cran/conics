@@ -33,7 +33,7 @@ to find the coordinates of the center, see the function
   Bernard Desgraupes \cr
   \email{bernard.desgraupes@u-paris10.fr}\cr
   University of Paris Ouest - Nanterre\cr 
-  Lab Modal'X (EA 3454)\cr
+  Lab Modal'X\cr
 }
 
 \seealso{

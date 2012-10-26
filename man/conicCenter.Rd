@@ -27,7 +27,7 @@ conic has no center the function raises an error.
   Bernard Desgraupes \cr
   \email{bernard.desgraupes@u-paris10.fr}\cr
   University of Paris Ouest - Nanterre\cr 
-  Lab Modal'X (EA 3454)\cr
+  Lab Modal'X\cr
 }
 
 \seealso{

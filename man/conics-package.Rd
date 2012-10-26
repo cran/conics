@@ -7,8 +7,8 @@
   \tabular{ll}{
     Package: \tab conics\cr
     Type: \tab Package\cr
-    Version: \tab 0.1\cr
-    Date: \tab 2012-10-16\cr
+    Version: \tab 0.2\cr
+    Date: \tab 2012-10-23\cr
     License: \tab  GPL (>= 2) \cr
   }
 }
@@ -38,7 +38,7 @@ display the vignette, type the following instruction in the R console :
   Bernard Desgraupes \cr
   \email{bernard.desgraupes@u-paris10.fr}\cr
   University of Paris Ouest - Nanterre \cr 
-  Lab Modal'X (EA 3454)\cr
+  Lab Modal'X\cr
 }
 
 \seealso{
