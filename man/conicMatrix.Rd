@@ -33,7 +33,7 @@ The associated quadratic form is:
   Bernard Desgraupes \cr
   \email{bernard.desgraupes@u-paris10.fr}\cr
   University of Paris Ouest - Nanterre\cr 
-  Lab Modal'X\cr
+  Lab Modal'X (EA 3454)\cr
 }
 
 \seealso{

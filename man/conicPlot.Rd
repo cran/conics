@@ -61,7 +61,14 @@ conic:
 \item{center}{the center of the conic. See also the function \code{\link{conicCenter}}.}
 \item{asymptotes}{the slopes of the asymptotes. See also the function \code{\link{conicAsymptotes}}.}
 \item{vertices}{the vertices of the conic.}
+\item{foci}{the focal points of the conic.}
+\item{eccentricity}{the eccentricity of the conic.}
 \item{intercepts}{the intercepts in the case of parallel lines.}
+\item{points}{the coordinates of the points used to plot the conic.}
+
+The \code{points} component is returned only if the \emph{type} option is
+equal to \code{n} and if the conic is non-degenerate. In that case, nothing is
+drawn.
 }
 
 \author{
@@ -125,12 +132,13 @@ conicPlot(v)
 # Return value
 # ------------
 v <- c(2,2,2,-20,-28,10)
-cplot <- conicPlot(v)
-cplot$kind
-cplot$vertices
-cplot$center
-cplot$axes
-
+cp <- conicPlot(v)
+cp$kind
+cp$vertices
+cp$center
+cp$axes
+cp <- conicPlot(v,type='n')
+cp$points
 }
 
 \keyword{conics,plot}

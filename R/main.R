@@ -1,7 +1,7 @@
 # ===========================================================================
 # File: "main.R"
 #                        Created: 2011-01-11 12:47:48
-#              Last modification: 2012-10-26 07:24:15
+#              Last modification: 2013-11-22 11:38:53
 # Author: Bernard Desgraupes
 # e-mail: <bernard.desgraupes@u-paris10.fr>
 # ===========================================================================
@@ -98,18 +98,23 @@ plotEllipsis <- function(m, D, d, npoints,
 		y <- a*st*cos(t)+b*ct*sin(t)+C[2]
 		
 		# Plot the parametric curve
-		if (add) {
-			lines(x, y, type=type, xlim=xlim, ylim=ylim, ...)
+		if (type=="n") {
+			res[["points"]] <- cbind(x,y)
 		} else {
-			plot(x, y, type=type, xlim=xlim, ylim=ylim, ...)
+			if (add) {
+				lines(x, y, type=type, xlim=xlim, ylim=ylim, ...)
+			} else {
+				plot(x, y, type=type, xlim=xlim, ylim=ylim, ...)
+			}
 		}
 		
+		
 		# Draw the axes if required
-		if (sym.axes) {
+		if (sym.axes && type!="n") {
 			conicPlotAxes(C, ct, st, ax.lty, ax.col)
 		}
 		
-		if (center) {
+		if (center && type!="n") {
 			points(C[1],C[2])
 		}
 		
@@ -120,6 +125,22 @@ plotEllipsis <- function(m, D, d, npoints,
 		ys <- st*XS+ct*YS+C[2]
 		res[["vertices"]] <- list(x=xs, y=ys)
 		
+		# Calculate the coords of the foci
+		df <- sqrt(abs(a^2-b^2))
+		if (a>b) {
+			XF <- c(df,-df)
+			YF <- c(0,0)
+		} else {
+			XF <- c(0,0)
+			YF <- c(df,-df)
+		}
+		xf <- ct*XF-st*YF+C[1]
+		yf <- st*XF+ct*YF+C[2]
+		res[["foci"]] <- list(x=xf, y=yf)
+	
+		# Calculate the eccentricity
+		res[["eccentricity"]] <- df/max(a,b)
+	
 	} else {
 		if (options("warn")[[1]]) {
 			warning("the conic is empty")
@@ -186,7 +207,13 @@ plotHyperbola <- function(m, D, d, npoints=100,
 		# Vertices
 		xs <- c(a*ct+C[1],-a*ct+C[1])
 		ys <- c(a*st+C[2],-a*st+C[2])
-		
+
+		# Foci
+		df <- sqrt(a^2+b^2)
+		xf <- c(df*ct+C[1],-df*ct+C[1])
+		yf <- c(df*st+C[2],-df*st+C[2])
+		ecc <- df/a
+
 		# Suggested plotting ranges
 		ar <- 3*a
 		Rx <- c(ar*ct+C[1],-ar*ct+C[1])
@@ -209,6 +236,12 @@ plotHyperbola <- function(m, D, d, npoints=100,
 		xs <- c(-b*st+C[1],b*st+C[1])
 		ys <- c(b*ct+C[2],-b*ct+C[2])
 		
+		# Foci
+		df <- sqrt(a^2+b^2)
+		xf <- c(-df*st+C[1],df*st+C[1])
+		yf <- c(df*ct+C[2],-df*ct+C[2])
+		ecc <- df/b
+
 		# Suggested plotting ranges
 		br <- 3*b
 		Rx <- c(-br*st+C[1],br*st+C[1])
@@ -224,27 +257,38 @@ plotHyperbola <- function(m, D, d, npoints=100,
 	}
 
 	# Plot the parametric curve
-	if (add) {
-		lines(x1, y1, type=type, xlim=xlim, ylim=ylim, ...)
-		lines(x2, y2, type=type, xlim=xlim, ylim=ylim, ...)
+	if (type=="n") {
+		res[["points"]] <- cbind(c(x1,x2),c(y1,y2))
 	} else {
-		plot(x1, y1, type=type, xlim=xlim, ylim=ylim, ...)
-		lines(x2, y2, type=type, xlim=xlim, ylim=ylim, ...)
+		if (add) {
+			lines(x1, y1, type=type, xlim=xlim, ylim=ylim, ...)
+			lines(x2, y2, type=type, xlim=xlim, ylim=ylim, ...)
+		} else {
+			plot(x1, y1, type=type, xlim=xlim, ylim=ylim, ...)
+			lines(x2, y2, type=type, xlim=xlim, ylim=ylim, ...)
+		}
 	}
 	
-	if (center) {
+	
+	if (center && type!="n") {
 		points(C[1],C[2])
 	}
-	if (sym.axes) {
+	if (sym.axes && type!="n") {
 		conicPlotAxes(C, ct, st, ax.lty, ax.col)
 	}
-	if (asymptotes) {
+	if (asymptotes && type!="n") {
 		conicPlotAsymptotes(C, asy, as.lty, as.col)
 	}
 	
 	# Coords of the vertices
 	res[["vertices"]] <- list(x=xs, y=ys)
-		
+	
+	# Coords of the foci
+	res[["foci"]] <- list(x=xf, y=yf)
+
+	# Eccentricity
+	res[["eccentricity"]] <- ecc
+	
 	return(res)
 }
 
@@ -316,20 +360,35 @@ plotParabola <- function(m, npoints=100,
 	}
 
 	# Plot the parametric curve
-	if (add) {
-		lines(x1, x2, type=type, ...)
+	if (type=="n") {
+		res[["points"]] <- cbind(x1,x2)
 	} else {
-		plot(x1, x2, type=type, xlim=xlim, ylim=ylim, ...)
+		if (add) {
+			lines(x1, x2, type=type, ...)
+		} else {
+			plot(x1, x2, type=type, xlim=xlim, ylim=ylim, ...)
+		}
 	}
+	
 	
 	# Find coords of the vertex in canonic basis
 	S1 <- A*S2^2+B*S2+C
 	xs <- (b*S1+a*S2)/nrm
 	ys <- (-a*S1+b*S2)/nrm
 	res[["vertices"]] <- list(x=xs, y=ys)
-	if (sym.axes) {
+	if (sym.axes && type!="n") {
 		conicPlotAxes(c(xs,ys), b, -a, ax.lty, ax.col)
 	}
+	
+	# Coords of the focus
+	XF <- S2
+	YF <- S1 + 1/(4*A)
+	xf <- (b*YF+a*XF)/nrm
+	yf <- (-a*YF+b*XF)/nrm
+	res[["foci"]] <- list(x=xf, y=yf)
+	
+	# Eccentricity
+	res[["eccentricity"]] <- 1
 	
 	return(res)
 }
@@ -525,7 +584,7 @@ conicAxes <- function(x) {
  # 
  # "conicAsymptotes(x)" --
  # 
- # The 'm' argument is the symmetric 3x3 matrix defining the conic. 
+ # The 'x' argument is either a 6-length vector or a symmetric 3x3 matrix. 
  # 
  # ------------------------------------------------------------------------
  ##
@@ -574,7 +633,7 @@ conicPlotAxes <- function(C, ct, st, ax.lty=1, ax.col=palette()[1]) {
 ## 
  # ------------------------------------------------------------------------
  # 
- # "conicPlotAsymptotes(m)" --
+ # "conicPlotAsymptotes(C, s)" --
  # 
  # C is the center, s is 2-length vector containing the slopes of the
  # asymptotes.

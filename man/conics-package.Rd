@@ -7,9 +7,9 @@
   \tabular{ll}{
     Package: \tab conics\cr
     Type: \tab Package\cr
-    Version: \tab 0.2\cr
-    Date: \tab 2012-10-23\cr
-    License: \tab  GPL (>= 2) \cr
+    Version: \tab \Sexpr[stage=render]{library(utils);packageVersion("conics")}\cr
+    Date: \tab \Sexpr[stage=build]{format(Sys.time(),"\%Y-\%m-\%d")}\cr
+    License: \tab \Sexpr[stage=build]{library(utils);packageDescription("conics")$License} \cr
   }
 }
 
